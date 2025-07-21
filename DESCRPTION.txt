@@ -1,0 +1,10 @@
+Package: ExerciseSheet6
+Type: Package
+Title: Functions for Tourism Data
+Version: 0.1.0
+Author: Xinyuan Zhuang
+Maintainer: Xinyuan Zhuang <https://github.com/z-x156/ExerciseSheet_6.com>
+Description: Simple functions to query and plot German tourism data.
+License: MIT
+Encoding: UTF-8
+LazyData: true

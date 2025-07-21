@@ -1,0 +1,174 @@
+---
+title: "Exercise 6"
+subtitle: "Fortgeschrittene Statistische Software für NF"
+author: "Xinyuan Zhuang (12541600)"
+date: "2025-07-14"
+output: distill::distill_article
+---
+
+## General Remarks
+
+-   You can submit your solutions in teams of up to 3 students.
+-   Include all your team-member's names and student numbers (Martrikelnummern) in the `authors` field.
+-   Please use the exercise template document to work on and submit your results.
+-   Use a level 2 heading for each new exercise and answer each subtask next to it's bullet point or use a new level 3 heading if you want.
+-   Always render the R code for your solutions and make sure to include the resulting data in your rendered document.
+    -   Make sure to not print more than 10 rows of data (unless specifically instructed to).
+-   Always submit both the rendered document(s) as well as your source Rmarkdown document. Submit the files separately on moodle, **not** as a zip archive.
+-   Make sure to submit you render your Rmarkdown as `distill:distill_article` and check the final output regarding any issues in formatting. Formatting errors may lead to point deductions.
+
+## Exercise 1: Building an R package (20 Points)
+
+For this exercise we ask you to build an R package. We do not ask you to build any particular R package, but leave the choice of what your R package will do up to you, to keep it more interesting for you.
+
+Instead of having particular tasks for you to complete, we have a list of requirements for your final R package and submission. Please submit an Rmd and render it as always, although you will only have to provide the short information asked for under *Submission*.
+
+We advise you to start early with this exercise sheet and encourage you to reach out if you encounter issues during the creation of your package. For detailed information on all aspects of creating an R package, we highlight again, the [great book on R packages](https://r-pkgs.org/) by Hadley Wickham.
+
+We look forward to seeing the cool packages you come up with and thank you for participating in the course!
+
+### Functionality
+
+a)  Create a working R package that performs the task it is intended to do
+
+b)  Your R package needs to be installable (test this before submitting)
+
+c)  Your R package should contain at least 2 functions
+
+d)  The functions in your R package should be properly documented according to the Roxygen convention. Each function should include an `@example` tag.
+
+e)  The documentation for your package should be properly generated and up-to-date. After every change to the Roxygen comments of your functions, you will need to run `devtools::document()` again to do this.
+
+f)  The `DESCRIPTION` file of your package should be properly formatted and contain all the required dependencies of your package. It should also provide an accurate `Title` and `Description` for your package.
+
+### Function 1: get_region_details()
+
+This function filters the tourism dataset by region name and returns all corresponding values for that region.
+
+```{r}
+library(readr)
+library(dplyr)
+library(stringr)
+
+# Load pre-cleaned CSV file
+tourism_data <- read_csv("D:/Sose 25 Software R 2/Exercise 6/regions_cleaned.csv")
+
+```
+
+```{r, eval=FALSE}
+#' Extract Tourism Data for a Specific Region
+#'
+#' This function extracts all tourism-related data for a specific region based on its region code
+#' (e.g., "T01" to "T43") from the cleaned tourism dataset.
+#'
+#' @param code A character string specifying the region code, e.g., "T01", "T02", ..., "T43".
+#'
+#' @return A data frame containing all available data for the selected region.
+#'
+#' @examples
+#' get_region_data("T03")
+#'
+#' @export
+#' 
+get_region_data <- function(region_codes, file_path = "D:/Sose 25 Software R 2/Exercise 6/regions_cleaned.csv") {
+  library(tidyverse)
+  
+data <- read_csv(file_path, show_col_types = FALSE) %>%
+    mutate(Region = str_trim(toupper(Region)))
+
+region_codes <- str_trim(toupper(region_codes))
+  
+result <- data %>% 
+    filter(Region %in% region_codes)
+
+  
+not_found <- setdiff(region_codes, result$Region)
+  if (length(not_found) > 0) {
+  warning("Region not found:", paste(not_found, collapse = ", "))
+  }
+ return(result)
+}
+
+get_region_details(c("T03", "T04"))
+
+```
+
+### Function 2: plot_indicator()
+
+```{r, eval=FALSE}
+#' Plot Tourism Indicator by Region (T01-T43)
+#'
+#' This function generates a bar chart showing how a selected tourism indicator 
+#' (e.g., "Ankünfte", "Ausland", "Übernachtungen", "Auslastung") varies across 
+#' all available tourism regions (e.g., "T01" to "T43").
+#'
+#' @param data A cleaned data frame that contains tourism statistics by region.
+#' @param indicator A character string indicating the tourism indicator to plot.
+#'        Must match one of the column names in the data (e.g., "Ausland").
+#'
+#' @return A ggplot2 bar chart visualizing the selected indicator across all regions.
+#'
+#' @examples
+#' plot_indicator(cleaned, "Ausland")
+#'
+#' @export
+library(readxl)
+library(dplyr)
+library(ggplot2)
+
+raw <- read_excel("D:/Sose 25 Software R 2/Exercise 6/179_2025_57_g_tourismus_05_2025_eckdaten_tourismusregionen.xlsx",
+                  sheet = "Tab4-S7", skip = 17, col_names = FALSE)
+
+
+raw_renamed <- raw %>% rename(
+  Region = ...2,
+  Region_Name = ...3,
+  Ankunft = ...6,
+  Ausland = ...8,
+  Uebernachtung = ...32,
+  Auslastung = ...34
+)
+
+cleaned <- raw_renamed %>%
+  filter(!is.na(Region_Name)) %>%
+  mutate(
+    Ankunft = as.numeric(gsub(",", "", Ankunft)),
+    Ausland = as.numeric(gsub(",", "", Ausland)),
+    Uebernachtung = as.numeric(gsub(",", "", Uebernachtung)),
+    Auslastung = as.numeric(gsub(",", "", Auslastung))
+  )
+
+
+plot_indicator <- function(data, indicator) {
+  ggplot(data, aes(x = reorder(Region_Name, .data[[indicator]]), y = .data[[indicator]])) +
+    geom_bar(stat = "identity", fill = "steelblue") +
+    coord_flip() +
+    labs(
+      title = paste("Tourism indicator:", indicator),
+      x = "Region",
+      y = indicator
+    ) +
+    theme_minimal()
+}
+
+
+plot_indicator(cleaned, "Ausland")
+
+```
+
+### Submission
+
+a)  Briefly describe in one - two sentences what your R package does and why you decided to choose this functionality. This is just intended to give us some context to better understand the package.
+
+b)  To make installation easier, your R package should be in a public repository on GitHub. Provide the URL to the GitHub repository below:
+
+
+This R package provides two functions to extract and visualize German tourism statistics by region. It allows users to retrieve regional data by code and generate bar plots for selected indicators (e.g. "Ankunft", "Uebernachtungen").
+
+Github: `https://github.com/z-x156/ExerciseSheet_6`
+
+c)  Your R package should be installable via `remotes::install_github()`. Before submitting your solution to this exercise sheet please test whether you can install your R package from GitHub. Provide the command below:
+
+``` r
+remotes::install_github("z-x156/ExerciseSheet_6")
+```
