@@ -50,7 +50,6 @@ library(readr)
 library(dplyr)
 library(stringr)
 
-# Load pre-cleaned CSV file
 tourism_data <- read_csv("D:/Sose 25 Software R 2/Exercise 6/regions_cleaned.csv")
 
 ```
@@ -66,7 +65,7 @@ tourism_data <- read_csv("D:/Sose 25 Software R 2/Exercise 6/regions_cleaned.csv
 #' @return A data frame containing all available data for the selected region.
 #'
 #' @examples
-#' get_region_data("T03")
+#' get_region_details("T03")
 #'
 #' @export
 #' 
@@ -89,7 +88,7 @@ not_found <- setdiff(region_codes, result$Region)
  return(result)
 }
 
-get_region_details(c("T03", "T04"))
+get_region_details("T03")
 
 ```
 
